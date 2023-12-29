@@ -15,7 +15,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -26,6 +29,7 @@ import java.io.Console;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -83,12 +87,56 @@ public class AuthorController {
     }
     @PostMapping("/highSearch")
     public List<Author> highSearch(@RequestBody SearchReq searchReq){
+        System.out.println(searchReq);
         try{
             RestHighLevelClient client = EsClient.createClient();
             SearchRequest request = new SearchRequest("author");
-
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
             SearchSourceBuilder builder = new SearchSourceBuilder();
-            builder.query(QueryBuilders.multiMatchQuery("all", searchReq.getName(),searchReq.getCity(),searchReq.getProvence(), searchReq.getStyle(),searchReq.getSchool()));
+            if(searchReq.getProvence() != null)
+            {
+                if(searchReq.getProvence().length() > 0)
+                {
+                    System.out.println("!!!!!!!!!!Province!!!!!!!!!!");
+                    MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("province", searchReq.getProvence());
+                    boolQuery.filter(matchQueryBuilder);
+                }
+            }
+            if(searchReq.getCity() != null)
+            {
+                if(searchReq.getCity().length() > 0)
+                {
+                    System.out.println("!!!!!!!!!!City!!!!!!!!!!");
+                    MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("city", searchReq.getCity());
+                    boolQuery.filter(matchQueryBuilder);
+                }
+            }
+            if(searchReq.getStyle() != null)
+            {
+                if(searchReq.getStyle().length() > 0)
+                {
+                    System.out.println("!!!!!!!!!!Style!!!!!!!!!!");
+                    MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("writingStyle", searchReq.getStyle());
+                    boolQuery.filter(matchQueryBuilder);
+                }
+            }
+            if(searchReq.getSchool() != null)
+            {
+                if(searchReq.getSchool().length() > 0)
+                {
+                    System.out.println("!!!!!!!!!!school!!!!!!!!!!!!!!");
+                    MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("school", searchReq.getSchool());
+                    boolQuery.filter(matchQueryBuilder);
+                }
+            }
+            if(searchReq.getAgeFrom() != 0 || searchReq.getAgeTo() != 0)
+            {
+                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("age");
+                rangeQuery.gte(searchReq.getAgeFrom());
+                rangeQuery.lte(searchReq.getAgeTo());
+                boolQuery.filter(rangeQuery);
+            }
+            builder.query(boolQuery);
             request.source(builder);
 
             SearchResponse response = client.search(request, RequestOptions.DEFAULT);
@@ -99,18 +147,21 @@ public class AuthorController {
                 //System.out.println(source);
                 result.add(JSON.parseObject(source, Author.class));
             }
+            System.out.println(result);
             List<Author> resAfterFilter = new ArrayList<>();
-            for(int i = 0; i < result.size(); i++)
+            if(searchReq.getBirthDateFrom() != null && searchReq.getBirthDateTo() != null)
             {
-                Date birthDate = new Date(result.get(i).getBirthDate());
-                int age = result.get(i).getAge();
-                if(birthDate.getTime() > searchReq.getBirthDateTo().getTime() || birthDate.getTime() < searchReq.getBirthDateFrom().getTime() || age > searchReq.getAgeTo() || age < searchReq.getAgeFrom())
-                {
-                    continue;
+                for (Author author : result) {
+                    Date birthDate = new Date(author.getBirthDate());
+                    if (birthDate.getTime() > searchReq.getBirthDateTo().getTime() || birthDate.getTime() < searchReq.getBirthDateFrom().getTime()) {
+                        continue;
+                    }
+                    resAfterFilter.add(author);
                 }
-                resAfterFilter.add(result.get(i));
+                System.out.println(resAfterFilter);
+                return resAfterFilter;
             }
-            return resAfterFilter;
+            return result;
         }
         catch (Exception e)
         {
