@@ -1,0 +1,76 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "name": {
+        "type" : "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "url": {
+        "type": "keyword"
+      },
+      "imgUrl": {
+        "type": "keyword"
+      },
+      "age": {
+        "type": "integer"
+      },
+      "birthDate": {
+        "type": "keyword"
+      },
+      "deathDate": {
+        "type": "keyword"
+      },
+      "school": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "Writtingstyle": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to": "all"
+      },
+      "province": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "city": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "pseudonym": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "Representative": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "BriefIntroduction": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to":"all"
+      },
+      "honors": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "copy_to": "all"
+      },
+      "gender": {
+        "type": "keyword"
+      },
+      "all": {
+        "type":"text",
+        "analyzer":"ik_max_word"
+      }
+    }
+  }
+}
