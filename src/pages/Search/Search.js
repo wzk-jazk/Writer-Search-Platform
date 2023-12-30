@@ -91,7 +91,7 @@ const Search=()=>{
         const dt = {
             name:name
         }
-        const url = 'https://www.fastmock.site/mock/0a62bd1eaff571e6a131a772cdd8d3cd/api/search';
+        const url = 'http://localhost:8090/api/lowSearch';
         axios.post(url,dt)
             .then(response=>{
                 const mappedAuthorList = Object.values(response.data).map(item => ({
@@ -100,9 +100,9 @@ const Search=()=>{
                     imgUrl: item.imgUrl,
                     birthDate : item.birthDate,
                     deathDate :item.deathDate,
-                    sex:item.sex,
+                    sex:item.gender,
                     honors:item.honors,
-                    provence:item.provence,
+                    provence:item.province,
                     city:item.city,
                     pseudonym:item.pseudonym
                 }));
@@ -111,75 +111,73 @@ const Search=()=>{
 
                 // setPage(1)
             })
-    },[])
-
+    },[name])
     function valueChange(allValues) {
+        let Byear, Bmonth, Bday, Eyear, Emonth, Eday;
+
         if (allValues.BEtime && allValues.BEtime[0] && allValues.BEtime[1]) {
-            let Byear=allValues.BEtime[0].$y;
-            let Bmonth=allValues.BEtime[0].$M+1;
-            let Bday=allValues.BEtime[0].$D;
-
-            let Eyear=allValues.BEtime[1].$y;
-            let Emonth=allValues.BEtime[1].$M+1;
-            let Eday=allValues.BEtime[1].$D;
-
-            let Fage=allValues.age;
-            let ageFrom;
-            let ageTo;
-            if(Fage===0){
-                ageFrom=0;
-                ageTo=20;
-            }
-            else if(Fage===1){
-                ageFrom=20;
-                ageTo=40;
-            }
-            else if(Fage===2){
-                ageFrom=40;
-                ageTo=60;
-            }
-            else if(Fage===2){
-                ageFrom=60;
-                ageTo=9999;
-            }
-            console.log(Fage)
-            setData({
-                name:name,
-                provence:allValues.provence,
-                city:allValues.city,
-                school:allValues.school,
-                style:allValues.style,
-                birthDateFrom:Byear+Bmonth+Bday,
-                birthDateTo:Eyear+Emonth+Eday,
-                ageFrom:ageFrom,
-                ageTo:ageTo
-            })
+            Byear = allValues.BEtime[0].$y;
+            Bmonth = allValues.BEtime[0].$M+1;
+            Bday = allValues.BEtime[0].$D;
+            Eyear = allValues.BEtime[1].$y;
+            Emonth = allValues.BEtime[1].$M+1;
+            Eday = allValues.BEtime[1].$D;
         }
-        const url = 'https://www.fastmock.site/mock/0a62bd1eaff571e6a131a772cdd8d3cd/api/search';
-        axios.post(url,data)
+
+        let Fage = allValues.age;
+        let ageFrom;
+        let ageTo;
+
+        if(Fage === "20"){
+            ageFrom = 0;
+            ageTo = 20;
+        }
+        else if(Fage === "40"){
+            ageFrom = 20;
+            ageTo = 40;
+        }
+        else if(Fage === "60"){
+            ageFrom = 40;
+            ageTo = 60;
+        }
+        else if(Fage === "80"){
+            ageFrom = 60;
+            ageTo = 9999;
+        }
+        console.log(Fage)
+
+        const newSearchData = {
+            name: null,
+            provence: allValues.provence,
+            city: allValues.city,
+            school: allValues.school,
+            style: allValues.style,
+            birthDateFrom: Byear ? Byear + "-" + Bmonth + "-" + Bday : undefined,
+            birthDateTo: Eyear ? Eyear + "-" + Emonth + "-" + Eday : undefined,
+            ageFrom: ageFrom,
+            ageTo: ageTo
+        };
+
+        setData(newSearchData);
+        console.log(newSearchData);
+        axios.post("http://localhost:8090/api/highSearch", newSearchData)
             .then(response=>{
                 const mappedAuthorList = Object.values(response.data).map(item => ({
                     name: item.name,
                     imgUrl: item.imgUrl,
                     birthDate : item.birthDate,
                     deathDate :item.deathDate,
-                    sex:item.sex,
+                    sex:item.gender,
                     honors:item.honors,
-                    provence:item.provence,
+                    provence:item.province,
                     city:item.city,
                     pseudonym:item.pseudonym
                 }));
-                setPage(1)
-                console.log(mappedAuthorList[0])
-                setAuthor(mappedAuthorList)
-
-                setPage(1)
+                setAuthor(mappedAuthorList);
             })
     }
-
     function drawAuthorCard() {
         let authorCardList=[];
-        console.log(author)
         if(author.length === 0){
             authorCardList.push(
                 <Col span={21}>
@@ -215,7 +213,7 @@ const Search=()=>{
                                             出生日期：{author[i].birthDate}
                                         </Col>
                                         <Col span={8}>
-                                            逝世日期：{author[i].birthDate}
+                                            逝世日期：{author[i].deathDate}
                                         </Col>
                                         <Col span={8}>
                                             籍贯：{`${author[i].provence}+${author[i].city}`}
